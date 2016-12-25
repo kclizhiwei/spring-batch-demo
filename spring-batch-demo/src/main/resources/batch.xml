@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+		http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
+	<import resource="application.xml"/>
+	
+	<bean id="hello" class="com.spring.batch.simple.WriteTasklet" p:message="hello "/>
+	<bean id="world" class="com.spring.batch.simple.WriteTasklet" p:message="world!"/>
+	
+	<batch:job id="helloWorldJob">
+		<batch:step id="hello_step1" next="hello_step2">
+			<batch:tasklet ref="hello" transaction-manager="transactionManager"/>
+		</batch:step>
+		<batch:step id="hello_step2">
+			<batch:tasklet ref="world" transaction-manager="transactionManager"/>
+		</batch:step>
+	</batch:job>
+	
+	<batch:job id="csvJob">
+		<batch:step id="csvStep">
+			<batch:tasklet transaction-manager="transactionManager">
+				<batch:chunk reader="csvItemReader" writer="csvItemWiter" processor="csvItemProcessor" commit-interval="1"/>
+			</batch:tasklet>
+		</batch:step>
+	</batch:job>
+	
+	<bean id="csvItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
+		<property name="resource" value="classpath:inputFile.csv"/>
+		<property name="lineMapper">
+			<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+				<property name="lineTokenizer" ref="lineTokenizer"/>
+				<property name="fieldSetMapper" >
+					<bean class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
+						<property name="prototypeBeanName" ref="user"/>
+					</bean>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<bean id="user" class="com.spring.batch.simple.model.User"></bean>
+	<bean id="lineTokenizer" class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+		<property name="delimiter" value=","/>
+		<property name="names">
+			<list>
+				<value>userId</value>
+				<value>username</value>
+				<value>password</value>
+				<value>email</value>
+				<value>phoneNum</value>
+			</list>
+		</property>
+	</bean>
+	<bean id="csvItemWiter" class="org.springframework.batch.item.file.FlatFileItemWriter" scope="step">
+		<property name="resource" value="file:D:/outputFile.csv"/>
+		<property name="lineAggregator">
+			<bean class="org.springframework.batch.item.file.transform.DelimitedLineAggregator">
+				<property name="delimiter" value=","/>
+				<property name="fieldExtractor" >
+					<bean class="org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor">
+						<property name="names">
+							<list>
+								<value>userId</value>
+								<value>username</value>
+								<value>password</value>
+								<value>email</value>
+								<value>phoneNum</value>
+							</list>
+						</property>
+					</bean>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<bean id="csvItemProcessor" class="com.spring.batch.simple.CsvItemProcessor"></bean>
+</beans>
