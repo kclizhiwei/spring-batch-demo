@@ -30,7 +30,7 @@
 	<batch:job id="csvJob">
 		<batch:step id="csvStep">
 			<batch:tasklet transaction-manager="transactionManager">
-				<batch:chunk reader="csvItemReader" writer="csvItemWiter" processor="csvItemProcessor" commit-interval="#{jobParameters['commit-interval']}"/>
+				<batch:chunk reader="csvItemReader" writer="csvItemWiter" processor="csvItemProcessor" commit-interval="1"/>
 			</batch:tasklet>
 		</batch:step>
 	</batch:job>
@@ -42,7 +42,7 @@
 				<property name="lineTokenizer" ref="lineTokenizer"/>
 				<property name="fieldSetMapper" >
 					<bean class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
-						<property name="prototypeBeanName" value="user"/>
+						<property name="prototypeBeanName" ref="user"/>
 					</bean>
 				</property>
 			</bean>
