@@ -20,7 +20,7 @@
 	
 	<batch:job id="helloWorldJob">
 		<batch:step id="hello_step1" next="hello_step2">
-			<batch:tasklet ref="hello" transaction-manager="transactionManager"/>
+			<batch:tasklet ref="hello" transaction-manager="transactionManager" task-executor=""/>
 		</batch:step>
 		<batch:step id="hello_step2">
 			<batch:tasklet ref="world" transaction-manager="transactionManager"/>
